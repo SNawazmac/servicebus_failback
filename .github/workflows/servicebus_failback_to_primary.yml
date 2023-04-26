@@ -1,0 +1,40 @@
+name: servicebus_failback_to_primary
+on:
+  workflow_call:
+    inputs:
+      primary_servicebus_resource_group_name:
+        required: true
+        type: string
+      servicebus_aliasname:
+        required: true
+        type: string
+      primary_servicebus_namespace_name:
+        required: true
+        type: string
+      subscriptionId_of_primary_namespace:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS_DELOITTE_SUB:
+        required: true
+jobs:  
+  servicebus_failback_to_primary:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest       
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        repository: SNawazmac/servicebus_failback
+    - name: Login via Az module
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS_DELOITTE_SUB}}
+        enable-AzPSSession: true
+    - name: servicebus_failback
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+          ./servicebus_failback_to_primary.ps1 -primary_servicebus_resource_group_name "${{ inputs.primary_servicebus_resource_group_name }}" -servicebus_aliasname "${{ inputs.servicebus_aliasname }}" -primary_servicebus_namespace_name "${{ inputs.primary_servicebus_namespace_name }}" -subscriptionId_of_primary_namespace "${{ inputs.subscriptionId_of_primary_namespace }}"
+        azPSVersion: "latest"
